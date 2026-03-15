@@ -22,6 +22,7 @@ use tokio::time::interval;
 use tracing::{error, info, warn};
 
 const DEFAULT_PRICE_POLL_INTERVAL_SEC: u64 = 600; // 10 minutes; live price from Binance when MOCK_PRICE is not set
+const MAX_DECIMAL_PLACES: usize = 6;
 
 #[derive(Clone)]
 struct Config {
@@ -53,7 +54,8 @@ impl Config {
             env::var("BACKEND_KEYPAIR_PATH").context("BACKEND_KEYPAIR_PATH is required")?;
         if backend_keypair_path.starts_with("~/") {
             if let Some(home) = env::var_os("HOME") {
-                backend_keypair_path = format!("{}/{}", home.to_string_lossy(), &backend_keypair_path[2..]);
+                backend_keypair_path =
+                    format!("{}/{}", home.to_string_lossy(), &backend_keypair_path[2..]);
             }
         }
         let poll = env::var("PRICE_POLL_INTERVAL_SEC")
@@ -149,7 +151,11 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn run_price_updater(cfg: Config, price_source: PriceSource, admin: Arc<Keypair>) -> Result<()> {
+async fn run_price_updater(
+    cfg: Config,
+    price_source: PriceSource,
+    admin: Arc<Keypair>,
+) -> Result<()> {
     let client = RpcClient::new(cfg.rpc_http.clone());
     let mut ticker = interval(cfg.price_poll_interval);
 
@@ -172,7 +178,10 @@ async fn try_update_price(
     match price_source.fetch_price().await {
         Ok(price) => {
             if price == 0 {
-                warn!("Skipped {} price update because fetched price is zero", kind);
+                warn!(
+                    "Skipped {} price update because fetched price is zero",
+                    kind
+                );
                 return;
             }
             match submit_price(client, cfg, price, admin).await {
@@ -210,12 +219,8 @@ async fn submit_price(
         .await
         .context("fetch blockhash")?;
 
-    let tx = Transaction::new_signed_with_payer(
-        &[ix],
-        Some(&admin.pubkey()),
-        &[admin.as_ref()],
-        bh,
-    );
+    let tx =
+        Transaction::new_signed_with_payer(&[ix], Some(&admin.pubkey()), &[admin.as_ref()], bh);
 
     let sig = client
         .send_and_confirm_transaction_with_spinner_and_commitment(
@@ -306,8 +311,36 @@ fn to_fixed_6(txt: &str) -> Result<u64> {
     // - "120.12" -> 120_120_000
     // - "0.000001" -> 1
     // Extra digits after the 6th decimal place should be truncated, not rounded.
-    let _ = txt;
-    todo!("student task: implement fixed-6 parser")
+    //let _ = txt;
+    //todo!("student task: implement fixed-6 parser")
+    // Fixed
+    let parts = txt.split('.').collect::<Vec<&str>>();
+    let integer_part = parts[0]
+        .parse::<u64>()
+        .map_err(|_| anyhow!("Error parse"))?;
+    let fractional_part = {
+        if parts.len() > 1 {
+            let part_next_max = {
+                match integer_part {
+                    0 => MAX_DECIMAL_PLACES,
+                    _ if parts[0].len() > MAX_DECIMAL_PLACES => 0,
+                    _ => MAX_DECIMAL_PLACES - parts[0].len() + 1,
+                }
+            };
+            let part_next = parts[1].len().min(part_next_max);
+            parts[1][0..part_next]
+                .parse::<u64>()
+                .map_err(|_| anyhow!("Error parse"))?
+                .checked_mul(10u64.pow((MAX_DECIMAL_PLACES - part_next) as u32))
+                .expect("Overflow")
+        } else {
+            0u64
+        }
+    };
+    Ok(integer_part
+        .checked_mul(1_000_000)
+        .and_then(|v| v.checked_add(fractional_part))
+        .expect("Overflow"))
 }
 
 #[cfg(test)]
@@ -334,13 +367,17 @@ mod tests {
         assert_eq!(to_fixed_6("120").unwrap(), 120_000_000);
         assert_eq!(to_fixed_6("120.12").unwrap(), 120_120_000);
         assert_eq!(to_fixed_6("0.000001").unwrap(), 1);
+        assert_eq!(to_fixed_6("0.0000001").unwrap(), 0);
+        assert_eq!(to_fixed_6("1200.12").unwrap(), 1200_120_000);
+        assert_eq!(to_fixed_6("1200.012").unwrap(), 1200_0120_00);
     }
 
     #[test]
     fn to_fixed_6_truncates_fraction_to_six_digits() {
         // TODO(student): this assertion is intentionally wrong.
         // The parser is expected to truncate after 6 digits instead of rounding.
-        assert_eq!(to_fixed_6("1.1234569").unwrap(), 1_123_457);
+        // Fixed
+        assert_eq!(to_fixed_6("1.1234569").unwrap(), 1_123_456);
     }
 
     #[test]
@@ -395,7 +432,10 @@ mod tests {
         match source {
             PriceSource::Mock(_) => panic!("expected http source"),
             PriceSource::Http { url } => {
-                assert_eq!(url, "https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT")
+                assert_eq!(
+                    url,
+                    "https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT"
+                )
             }
         }
     }
