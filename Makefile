@@ -62,4 +62,4 @@ frontend: kill-frontend
 	cd frontend && npm run dev
 
 test:
-	cd program && yarn run ts-mocha -p ./tsconfig.json -t 1000000 "tests/**/*.ts"
+	cd program && NODE_OPTIONS="--max-old-space-size=8192 --loader ts-node/esm --no-warnings" yarn run ts-mocha -p ./tsconfig.json -t 1000000 "tests/**/*.ts"
