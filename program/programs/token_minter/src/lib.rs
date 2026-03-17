@@ -4,14 +4,13 @@ use anchor_spl::{
     token::{self, Mint, MintTo, Token, TokenAccount},
 };
 use mpl_token_metadata::{
-    instructions::CreateMetadataAccountV3CpiBuilder,
-    types::DataV2,
-    ID as MPL_TOKEN_METADATA_ID,
+    instructions::CreateMetadataAccountV3CpiBuilder, types::DataV2, ID as MPL_TOKEN_METADATA_ID,
 };
 use sol_usd_oracle::{state::OracleState, PRICE_DECIMALS};
 
 pub const USD_DECIMALS: u8 = 6;
 pub const LAMPORTS_PER_SOL_U64: u64 = 1_000_000_000;
+const MAX_AGE_SLOT: u64 = 3500;
 
 declare_id!("BvFGTCj3NFHrw54QMMHMnoxzvKXXUbgvEAR3LWj6jcuw");
 
@@ -69,8 +68,13 @@ pub mod token_minter {
             oracle_state.decimals == PRICE_DECIMALS,
             MinterError::OracleDecimalsMismatch
         );
-
-        let fee_lamports = compute_fee_lamports(ctx.accounts.config.mint_fee_usd, oracle_state.price)?;
+        let current_slot = Clock::get()?.slot;
+        require!(
+            current_slot.saturating_sub(oracle_state.last_updated_slot) <= MAX_AGE_SLOT,
+            MinterError::StaleOracle
+        );
+        let fee_lamports =
+            compute_fee_lamports(ctx.accounts.config.mint_fee_usd, oracle_state.price)?;
 
         // Transfer SOL fee from user to treasury
         system_program::transfer(
@@ -170,7 +174,9 @@ fn compute_fee_lamports(mint_fee_usd: u64, price: u64) -> Result<u64> {
     // Both `mint_fee_usd` and `price` use 6 decimal places, so the formula is:
     // fee_lamports = mint_fee_usd * LAMPORTS_PER_SOL / price
     // Keep the integer math and overflow protection from the production version.
-    let _ = (mint_fee_usd, price);
+    // let _ = (mint_fee_usd, price);
+    // todo!("student task: implement fee conversion");
+    // Fixed
     let fee = (mint_fee_usd as u128)
         .checked_mul(LAMPORTS_PER_SOL_U64 as u128)
         .ok_or(MinterError::MathOverflow)?
@@ -178,7 +184,6 @@ fn compute_fee_lamports(mint_fee_usd: u64, price: u64) -> Result<u64> {
         .ok_or(MinterError::MathOverflow)?;
     let fee = u64::try_from(fee).map_err(|_| MinterError::MathOverflow)?;
     Ok(fee)
-    //todo!("student task: implement fee conversion");
 }
 
 #[derive(Accounts)]
@@ -312,4 +317,6 @@ pub enum MinterError {
     InvalidMetadataPda,
     #[msg("Metaplex create metadata CPI failed")]
     MetadataCpiFailed,
+    #[msg("Orcale stale")]
+    StaleOracle,
 }
