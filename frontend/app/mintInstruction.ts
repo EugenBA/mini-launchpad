@@ -18,17 +18,24 @@ import {
   METADATA_SEED,
   MINT_TOKEN_DISCRIMINATOR,
 } from "./config";
+import { Buffer } from "buffer";
 
 const ORACLE_PK = new PublicKey(ORACLE_PROGRAM_ID);
 const MINTER_PK = new PublicKey(MINTER_PROGRAM_ID);
 const MPL_METADATA_PK = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
-const SYSVAR_RENT = new PublicKey("SysvarRent111111111111111111111111111111111");
+const SYSVAR_RENT = new PublicKey(
+  "SysvarRent111111111111111111111111111111111"
+);
 
 /** Borsh: u32 LE length + UTF-8 bytes */
 function encodeBorshString(s: string): Uint8Array {
   const utf8 = new TextEncoder().encode(s);
   const out = new Uint8Array(4 + utf8.length);
-  new DataView(out.buffer, out.byteOffset, out.byteLength).setUint32(0, utf8.length, true);
+  new DataView(out.buffer, out.byteOffset, out.byteLength).setUint32(
+    0,
+    utf8.length,
+    true
+  );
   out.set(utf8, 4);
   return out;
 }
@@ -54,8 +61,14 @@ export function buildMintTokenInstruction({
   symbol,
   uri,
 }: BuildMintTokenInstructionArgs): TransactionInstruction {
-  const [configPda] = PublicKey.findProgramAddressSync([MINTER_SEED], MINTER_PK);
-  const [oraclePda] = PublicKey.findProgramAddressSync([ORACLE_SEED], ORACLE_PK);
+  const [configPda] = PublicKey.findProgramAddressSync(
+    [MINTER_SEED],
+    MINTER_PK
+  );
+  const [oraclePda] = PublicKey.findProgramAddressSync(
+    [ORACLE_SEED],
+    ORACLE_PK
+  );
   const [metadataPda] = PublicKey.findProgramAddressSync(
     [METADATA_SEED, MPL_METADATA_PK.toBytes(), mintKeypair.publicKey.toBytes()],
     MPL_METADATA_PK
@@ -65,7 +78,9 @@ export function buildMintTokenInstruction({
   const nameEnc = encodeBorshString(name.slice(0, 32));
   const symbolEnc = encodeBorshString(symbol.slice(0, 10));
   const uriEnc = encodeBorshString(uri.slice(0, 200));
-  const data = new Uint8Array(17 + nameEnc.length + symbolEnc.length + uriEnc.length);
+  const data = new Uint8Array(
+    17 + nameEnc.length + symbolEnc.length + uriEnc.length
+  );
   data.set(MINT_TOKEN_DISCRIMINATOR, 0);
   data[8] = decimals;
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -90,10 +105,14 @@ export function buildMintTokenInstruction({
       { pubkey: MPL_METADATA_PK, isSigner: false, isWritable: false },
       { pubkey: metadataPda, isSigner: false, isWritable: true },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-      { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      {
+        pubkey: ASSOCIATED_TOKEN_PROGRAM_ID,
+        isSigner: false,
+        isWritable: false,
+      },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_RENT, isSigner: false, isWritable: false },
     ],
-    data,
+    data: Buffer.from(data),
   });
 }

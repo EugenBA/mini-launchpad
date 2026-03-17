@@ -1,4 +1,20 @@
+#mint
+https://explorer.solana.com/tx/YdDfHZGJHt8HaDPmGqykeFB7H817ugpYi18kvhzspo5TTgc959U98YtWRX9qXU98trZBa3646PmH7EjaWhBpNBQ?cluster=devnet
+
+#token
+https://explorer.solana.com/address/BFiX8WGY9HfwzEfWc56KjGrnwj3KReDXxu2K7ix8cjBB?cluster=devnet
+
+#transfer_wallet
+https://explorer.solana.com/tx/5RJZmrkruyN783juPXJ4kKx98KpFuYYEChrAC9TKquV2dC4VsxUAqSbu54MobuxJTXxztyX3TQmaCRq8DeKyAoEr?cluster=devnet
+
+#addres mintera
+https://explorer.solana.com/address/BvFGTCj3NFHrw54QMMHMnoxzvKXXUbgvEAR3LWj6jcuw?cluster=devnet
+
+#addres oracle
+https://explorer.solana.com/address/GyJHW5SbAXzUUPXNCUjgq9zJJnNqjj6kLECX1i3ynUWn?cluster=devnet
+
 # Solana Mini Launchpad
+
 
 Учебный мини-лаунчпад на Solana + Anchor: два on-chain контракта (SOL/USD oracle и token minter), Rust backend для обновления цены и прослушки событий, а также Remix фронтенд (папка `frontend/`).
 

@@ -100,7 +100,6 @@ pub mod token_minter {
             ),
             initial_supply,
         )?;
-
         // Optional: create Metaplex token metadata (name/symbol/uri) when name is non-empty
         if !name.is_empty() {
             require!(
