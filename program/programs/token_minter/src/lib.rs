@@ -316,6 +316,6 @@ pub enum MinterError {
     InvalidMetadataPda,
     #[msg("Metaplex create metadata CPI failed")]
     MetadataCpiFailed,
-    #[msg("Orcale stale")]
+    #[msg("Oracle stale")]
     StaleOracle,
 }
