@@ -1,23 +1,93 @@
-#mint
-https://explorer.solana.com/tx/YdDfHZGJHt8HaDPmGqykeFB7H817ugpYi18kvhzspo5TTgc959U98YtWRX9qXU98trZBa3646PmH7EjaWhBpNBQ?cluster=devnet
-
-#token
-https://explorer.solana.com/address/BFiX8WGY9HfwzEfWc56KjGrnwj3KReDXxu2K7ix8cjBB?cluster=devnet
-
-#transfer_wallet
-https://explorer.solana.com/tx/5RJZmrkruyN783juPXJ4kKx98KpFuYYEChrAC9TKquV2dC4VsxUAqSbu54MobuxJTXxztyX3TQmaCRq8DeKyAoEr?cluster=devnet
-
-#addres mintera
-https://explorer.solana.com/address/BvFGTCj3NFHrw54QMMHMnoxzvKXXUbgvEAR3LWj6jcuw?cluster=devnet
-
-#addres oracle
-https://explorer.solana.com/address/GyJHW5SbAXzUUPXNCUjgq9zJJnNqjj6kLECX1i3ynUWn?cluster=devnet
-
-# Solana Mini Launchpad
-
-
+# 1. Учебный мини-лаунчпад на Solana + Anchor
 Учебный мини-лаунчпад на Solana + Anchor: два on-chain контракта (SOL/USD oracle и token minter), Rust backend для обновления цены и прослушки событий, а также Remix фронтенд (папка `frontend/`).
 
+
+# 2. Репозиторий
+ - ## Исходный проект:
+
+   https://github.com/EugenBA/mini-launchpad/tree/main
+ - ## Измененный код:
+
+   https://github.com/EugenBA/mini-launchpad/tree/dev
+
+# 3. Изменения
+## 3.1. Backend
+- функция to_fixed_6
+- тесты to_fixed_6_parses_integer_and_fractional_part, to_fixed_6_truncates_fraction_to_six_digits
+
+## 3.2. Frontend
+- mintinstruction.ts: изменена структура TransactionInstruction
+## 3.3. Oracle
+- функция: apply_price_update
+- тесты: "initialize_oracle sets admin and defaults"
+
+## 3.4. Minter
+- функция: compute_fee_lamports, mint_token
+- тесты: "initialize oracle + minter and mint token with fee"
+
+## 3.5. Тесты
+```text
+make test
+cd backend && cargo test --all && cd ../program && NODE_OPTIONS="--max-old-space-size=8192 --loader ts-node/esm --no-warnings" yarn run ts-mocha -p ./tsconfig.json -t 1000000 "tests/**/*.ts"
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.41s
+     Running unittests src/main.rs (target/debug/deps/backend-d94a5e6f1fdf2b50)
+
+running 7 tests
+test tests::parse_token_created_returns_none_for_unrelated_logs ... ok
+test tests::price_source_prefers_mock_over_url ... ok
+test tests::price_source_uses_default_url_when_no_override ... ok
+test tests::to_fixed_6_parses_integer_and_fractional_part ... ok
+test tests::parse_token_created_reads_expected_fields ... ok
+test tests::to_fixed_6_rejects_invalid_input ... ok
+test tests::to_fixed_6_truncates_fraction_to_six_digits ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+yarn run v1.22.22
+$ /home/eugen/mini-launchpad./program/node_modules/.bin/ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'
+
+
+  token_minter (LiteSVM)
+    ✔ initialize oracle + minter and mint token with fee (47ms)
+    ✔ rejects mint when initial supply is zero
+    ✔ rejects mint when decimals exceed allowed range
+
+  sol_usd_oracle (LiteSVM)
+    ✔ initialize_oracle sets admin and defaults
+    ✔ update_price updates price only for admin
+    ✔ rejects update_price from non-admin signer
+    ✔ rejects zero price update
+
+
+  7 passing (89ms)
+
+Done in 3.26s.
+```
+
+## 3.6 Ссылки
+- token
+  https://explorer.solana.com/address/BFiX8WGY9HfwzEfWc56KjGrnwj3KReDXxu2K7ix8cjBB?cluster=devnet
+
+- transaction mint token
+  https://explorer.solana.com/tx/YdDfHZGJHt8HaDPmGqykeFB7H817ugpYi18kvhzspo5TTgc959U98YtWRX9qXU98trZBa3646PmH7EjaWhBpNBQ?cluster=devnet
+
+- transaction transfer token
+  https://explorer.solana.com/tx/5RJZmrkruyN783juPXJ4kKx98KpFuYYEChrAC9TKquV2dC4VsxUAqSbu54MobuxJTXxztyX3TQmaCRq8DeKyAoEr?cluster=devnet
+
+# from:
+![wallet_token.png](img/wallet_token.png) 
+
+# to:
+
+![wallet_alice.png](img/wallet_alice.png)
+
+- address miter
+  https://explorer.solana.com/address/BvFGTCj3NFHrw54QMMHMnoxzvKXXUbgvEAR3LWj6jcuw?cluster=devnet
+
+- address oracle
+  https://explorer.solana.com/address/GyJHW5SbAXzUUPXNCUjgq9zJJnNqjj6kLECX1i3ynUWn?cluster=devnet
+
+  
 ## Структура
 - `program/` — Anchor workspace  
   - `programs/sol_usd_oracle` — хранит цену SOL/USD (decimals = 6)  
