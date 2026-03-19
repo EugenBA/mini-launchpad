@@ -66,13 +66,13 @@ Done in 3.26s.
 
 ## 3.6 Ссылки
 - token
-  https://explorer.solana.com/address/BFiX8WGY9HfwzEfWc56KjGrnwj3KReDXxu2K7ix8cjBB?cluster=devnet
+  https://explorer.solana.com/address/3hTZazYK7RcWvEY5gEKTega8purPv6gwH3ggihBrsZFf?cluster=devnet
 
 - transaction mint token
-  https://explorer.solana.com/tx/YdDfHZGJHt8HaDPmGqykeFB7H817ugpYi18kvhzspo5TTgc959U98YtWRX9qXU98trZBa3646PmH7EjaWhBpNBQ?cluster=devnet
+  https://explorer.solana.com/tx/5HLupHE8NC8pe7jDru6B7w7XLDsixZzKhpP3qnxZMuzULgHgmNYAYbXfbfLp21pzFcJXHoR5W2FL4m9wMezGJN8D?cluster=devnet
 
 - transaction transfer token
-  https://explorer.solana.com/tx/5RJZmrkruyN783juPXJ4kKx98KpFuYYEChrAC9TKquV2dC4VsxUAqSbu54MobuxJTXxztyX3TQmaCRq8DeKyAoEr?cluster=devnet
+  https://explorer.solana.com/tx/3hz9SehyHyhRSqyL1ebx5dPcTWdggPJiuJ7nPFJPeWY8sdKCjyCnWJi7NKsEkL3h2i9r6XAP4sr811DXfMzGc6nY?cluster=devnet
 
 # from:
 ![wallet_token.png](img/wallet_token.png) 
