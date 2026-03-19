@@ -109,7 +109,6 @@ describe("sol_usd_oracle (LiteSVM)", () => {
     );
     expect(decoded.admin.toBase58()).to.eq(payer.publicKey.toBase58());
     expect(decoded.price.toNumber()).to.eq(0);
-    // TODO(student): this expectation is intentionally wrong.
     // Re-check how many decimals the oracle stores for the SOL/USD price.
     // Fixed pub const USD_DECIMALS: u8 = 6;
     expect(decoded.decimals).to.eq(6);

@@ -305,14 +305,11 @@ fn parse_token_created(logs: &RpcLogsResponse, _program_id: Pubkey) -> Option<To
 }
 
 fn to_fixed_6(txt: &str) -> Result<u64> {
-    // TODO(student): parse a decimal string into an integer with 6 fixed decimals.
     // Examples:
     // - "120" -> 120_000_000
     // - "120.12" -> 120_120_000
     // - "0.000001" -> 1
     // Extra digits after the 6th decimal place should be truncated, not rounded.
-    //let _ = txt;
-    //todo!("student task: implement fixed-6 parser")
     // Fixed
     let parts = txt.split('.').collect::<Vec<&str>>();
     let integer_part = parts[0]
@@ -374,7 +371,6 @@ mod tests {
 
     #[test]
     fn to_fixed_6_truncates_fraction_to_six_digits() {
-        // TODO(student): this assertion is intentionally wrong.
         // The parser is expected to truncate after 6 digits instead of rounding.
         // Fixed
         assert_eq!(to_fixed_6("1.1234569").unwrap(), 1_123_456);
