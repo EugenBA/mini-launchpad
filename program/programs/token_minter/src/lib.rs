@@ -10,7 +10,7 @@ use sol_usd_oracle::{state::OracleState, PRICE_DECIMALS};
 
 pub const USD_DECIMALS: u8 = 6;
 pub const LAMPORTS_PER_SOL_U64: u64 = 1_000_000_000;
-const MAX_AGE_SLOT: u64 = 3500;
+const MAX_AGE_SLOT: u64 = 2600;
 
 declare_id!("BvFGTCj3NFHrw54QMMHMnoxzvKXXUbgvEAR3LWj6jcuw");
 

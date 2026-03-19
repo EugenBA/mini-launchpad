@@ -59,7 +59,7 @@ pub struct InitializeOracle<'info> {
 
 #[derive(Accounts)]
 pub struct UpdatePrice<'info> {
-    #[account(mut, seeds = [OracleState::SEED], bump = oracle.bump, has_one = admin)]
+    #[account(mut, has_one = admin, seeds = [OracleState::SEED], bump = oracle.bump)]
     pub oracle: Account<'info, OracleState>,
     pub admin: Signer<'info>,
 }
